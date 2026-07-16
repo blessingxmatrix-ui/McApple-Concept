@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>McApple — What if Apple Designed McDonald's? — A Design Experiment</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- GSAP & ScrollTrigger CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111111;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffc72c;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glass-dark {
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .hover-lift {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s;
+        }
+        .hover-lift:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 199, 44, 0.3);
+        }
+        .yellow-monochrome-map {
+            filter: sepia(1) saturate(15) hue-rotate(-12deg) brightness(0.95) contrast(1.1);
+        }
+        .glow-yellow {
+            box-shadow: 0 0 20px rgba(255, 199, 44, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-black text-white antialiased">
+
+    <!-- PRE-LOADER -->
+    <div id="loader" class="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center p-6 transition-opacity duration-1000">
+        <div class="m-auto text-center">
+            <div class="inline-block animate-pulse mb-8">
+                <svg width="90" height="90" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="mx-auto">
+                    <path d="M50 90C62.5 90 77 79 77 55C77 34.5 64 28 51.5 28C45.5 28 41.5 31 38.5 31C35.5 31 31 28 25.5 28C13 28 3.5 37.5 3.5 56C3.5 79 19 90 31.5 90C37 90 39.5 87.5 43.5 87.5C47.5 87.5 50 90 50 90Z" fill="#FFC72C"/>
+                    <path d="M51.5 28C58.3 26.5 62.5 19 60.5 12C53.5 13 47.5 20 48.5 27C49 28 50.5 28 51.5 28Z" fill="#FFC72C"/>
+                    <path d="M22 52C32 30 44 30 49 45C54 30 66 30 76 52" stroke="#111111" stroke-width="6.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h2 class="text-neutral-400 text-xs tracking-widest uppercase mb-2">Designed by Apple in Cupertino</h2>
+            <p class="text-neutral-600 text-[10px] tracking-widest uppercase">Assembled in McKitchen</p>
+            <div class="w-48 h-1 bg-neutral-900 rounded-full mx-auto mt-6 overflow-hidden">
+                <div id="loader-progress" class="h-full bg-[#FFC72C] w-0 transition-all duration-300"></div>
+            </div>
+            <p id="loader-percent" class="text-neutral-500 text-xs mt-2 font-mono">0%</p>
+        </div>
+    </div>
+
+    <!-- IN-APP PREMIUM NOTIFICATION TOAST -->
+    <div id="toast-notification" class="fixed top-24 right-6 z-50 transform translate-x-[120%] transition-transform duration-500 ease-out glass rounded-2xl p-4 max-w-sm flex items-center gap-4 shadow-2xl border border-[#FFC72C]/20">
+        <div class="w-10 h-10 rounded-full bg-[#FFC72C]/10 flex items-center justify-center text-[#FFC72C] shrink-0">
+            ✓
+        </div>
+        <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white">System Response Active</h4>
+            <p id="toast-message" class="text-[11px] text-neutral-400 mt-0.5">Custom layout configured and prepared.</p>
+        </div>
+    </div>
+
+    <!-- STICKY NAVIGATION -->
+    <header id="navbar" class="fixed top-0 left-0 right-0 z-40 transition-all duration-500 py-3 glass-dark">
+        <div class="max-w-7xl mx-auto px-6 flex items-center justify-between">
+            <a href="#" class="flex items-center space-x-3 group">
+                <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="transform group-hover:scale-110 transition-transform duration-300">
+                    <path d="M50 92C62.5 92 78 81 78 57C78 36.5 64.5 30 52 30C46 30 42 33 39 33C36 33 31.5 30 26 30C13.5 30 4 39.5 4 58C4 81 19.5 92 32 92C37.5 92 40 89.5 44 89.5C48 89.5 50.5 92 50 92Z" fill="#FFC72C"/>
+                    <path d="M52 30C58.8 28.5 63 21 61 14C54 15 48 22 49 29C49.5 30 51 30 52 30Z" fill="#FFC72C"/>
+                    <path d="M25 50C35 32 45 32 50 45C55 32 65 32 75 50" stroke="#111111" stroke-width="6" stroke-linecap="round"/>
+                </svg>
+                <span class="text-white text-xs font-semibold tracking-widest uppercase hidden sm:inline-block">McApple™ Studio</span>
+            </a>
+
+            <nav class="hidden lg:flex items-center space-x-8 text-[11px] font-medium text-neutral-400 tracking-wider">
+                <a href="#hero" class="hover:text-white transition-colors">Home</a>
+                <a href="#lineup" class="hover:text-white transition-colors">Menu</a>
+                <a href="#comparisons" class="hover:text-white transition-colors">Specifications</a>
+                <a href="#order" class="hover:text-white transition-colors">Configurator</a>
+                <a href="#ecosystem" class="hover:text-white transition-colors">Ecosystem</a>
+                <a href="#reviews" class="hover:text-white transition-colors">Reviews</a>
+                <a href="#pillars" class="hover:text-white transition-colors">Experience</a>
+                <a href="#timeline" class="hover:text-white transition-colors">History</a>
+                <a href="#map" class="hover:text-white transition-colors">Locations</a>
+                <a href="#faq" class="hover:text-white transition-colors">Support</a>
+            </nav>
+
+            <div>
+                <a href="#order" class="bg-[#FFC72C] text-black hover:bg-white font-bold text-[11px] tracking-widest uppercase px-5 py-2.5 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#FFC72C]/10 hover:shadow-white/10">
+                    Order Now
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section id="hero" class="min-h-screen relative overflow-hidden flex items-center justify-center pt-24 bg-gradient-to-b from-black via-neutral-950 to-neutral-900">
+        <div class="absolute top-1/4 left-1/4 w-[450px] h-[450px] rounded-full bg-[#FFC72C]/5 blur-[130px] pointer-events-none"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] rounded-full bg-red-600/3 blur-[130px] pointer-events-none"></div>
+
+        <div id="particles" class="absolute inset-0 pointer-events-none opacity-40"></div>
+
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10 w-full py-12">
+            <!-- Left Header copy -->
+            <div class="lg:col-span-6 flex flex-col justify-center text-center lg:text-left">
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-none mb-6">
+                    Think Different.<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#FFC72C] via-yellow-400 to-[#ffffff]">Eat Better.</span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-neutral-400 font-light max-w-lg mb-10 mx-auto lg:mx-0 leading-relaxed">
+                    Experience fast food reimagined through world-class design. Precision-engineered culinary hardware designed down to the millimeter.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
+                    <a href="#order" class="w-full sm:w-auto bg-[#FFC72C] text-black font-semibold tracking-wide px-8 py-4 rounded-full text-sm transition-all duration-300 transform hover:scale-105 text-center shadow-lg shadow-[#FFC72C]/15 hover:bg-white">
+                        Configure McApple Pro
+                    </a>
+                    <a href="#lineup" class="w-full sm:w-auto bg-neutral-900 text-white hover:bg-neutral-800 border border-neutral-800 font-semibold tracking-wide px-8 py-4 rounded-full text-sm transition-all duration-300 text-center">
+                        Compare Models
+                    </a>
+                </div>
+            </div>
+
+            <!-- Interactive Parallax Exploded Burger -->
+            <div class="lg:col-span-6 relative flex flex-col items-center justify-center min-h-[450px] md:min-h-[550px] select-none" id="burger-container">
+                <p class="text-neutral-500 text-[9px] uppercase tracking-widest absolute top-0 animate-pulse font-mono">Hover to Explode Culinary Engineering</p>
+                
+                <!-- Vector Layer Stack -->
+                <div class="relative w-72 h-96 flex flex-col justify-between items-center transition-all duration-700 ease-out py-8" id="burger-stack">
+                    <!-- Top Bun -->
+                    <div class="burger-layer absolute transform transition-all duration-500 ease-out z-30" style="top: 0px;" data-depth="0.15">
+                        <svg width="240" height="80" viewBox="0 0 240 80" fill="none">
+                            <path d="M10 70C10 30 50 10 120 10C190 10 230 30 230 70C230 74 210 76 120 76C30 76 10 74 10 70Z" fill="#E5A65D" stroke="#C4843D" stroke-width="2"/>
+                            <!-- Sesame Seeds -->
+                            <ellipse cx="60" cy="35" rx="3" ry="1.5" fill="#FFEAA7" transform="rotate(-15 60 35)"/>
+                            <ellipse cx="120" cy="25" rx="3" ry="1.5" fill="#FFEAA7" transform="rotate(10 120 25)"/>
+                            <ellipse cx="180" cy="40" rx="3" ry="1.5" fill="#FFEAA7" transform="rotate(5 180 40)"/>
+                            <ellipse cx="90" cy="45" rx="3" ry="1.5" fill="#FFEAA7" transform="rotate(-5 90 45)"/>
+                            <ellipse cx="150" cy="48" rx="3" ry="1.5" fill="#FFEAA7" transform="rotate(20 150 48)"/>
+                        </svg>
+                        <span class="absolute right-[-110px] top-1/2 -translate-y-1/2 text-neutral-500 text-[9px] tracking-widest font-mono uppercase bg-neutral-950/90 px-2 py-0.5 rounded border border-neutral-800 opacity-0 transition-opacity duration-300 layer-label">A15 Sesame Bun</span>
+                    </div>
+
+                    <!-- Pickles -->
+                    <div class="burger-layer absolute transform transition-all duration-500 ease-out z-25" style="top: 60px;" data-depth="0.3">
+                        <svg width="220" height="30" viewBox="0 0 220 30" fill="none">
+                            <ellipse cx="60" cy="15" rx="25" ry="10" fill="#2D4A22" stroke="#1E3316" stroke-width="2"/>
+                            <ellipse cx="60" cy="15" rx="15" ry="6" fill="#3B5E2F"/>
+                            <ellipse cx="160" cy="15" rx="25" ry="10" fill="#2D4A22" stroke="#1E3316" stroke-width="2"/>
+                            <ellipse cx="160" cy="15" rx="15" ry="6" fill="#3B5E2F"/>
+                        </svg>
+                        <span class="absolute right-[-110px] top-1/2 -translate-y-1/2 text-neutral-500 text-[9px] tracking-widest font-mono uppercase bg-neutral-950/90 px-2 py-0.5 rounded border border-neutral-800 opacity-0 transition-opacity duration-300 layer-label">Haptic Pickle OS</span>
+                    </div>
+
+                    <!-- Patty / Melted Cheese -->
+                    <div class="burger-layer absolute transform transition-all duration-500 ease-out z-20" style="top: 110px;" data-depth="0.55">
+                        <svg width="230" height="60" viewBox="0 0 230 60" fill="none">
+                            <path d="M15 15 L215 15 L210 25 L180 45 L150 15 L120 40 L90 15 L60 35 L40 15 Z" fill="#FFC72C"/>
+                            <rect x="15" y="20" width="200" height="30" rx="15" fill="#4B3125" stroke="#362218" stroke-width="2"/>
+                        </svg>
+                        <span class="absolute right-[-110px] top-1/2 -translate-y-1/2 text-neutral-500 text-[9px] tracking-widest font-mono uppercase bg-neutral-950/90 px-2 py-0.5 rounded border border-neutral-800 opacity-0 transition-opacity duration-300 layer-label">Cheese Engine M4</span>
+                    </div>
+
+                    <!-- Lettuce -->
+                    <div class="burger-layer absolute transform transition-all duration-500 ease-out z-15" style="top: 175px;" data-depth="0.75">
+                        <svg width="225" height="30" viewBox="0 0 225 30" fill="none">
+                            <path d="M10 15 Q25 5 40 15 T70 15 T100 15 T130 15 T160 15 T190 15 T215 15" stroke="#489C32" stroke-width="8" stroke-linecap="round" fill="none"/>
+                            <path d="M18 18 Q30 10 45 18 T75 18 T105 18 T135 18 T165 18 T195 18 T210 18" stroke="#5AB942" stroke-width="4" stroke-linecap="round" fill="none"/>
+                        </svg>
+                        <span class="absolute right-[-110px] top-1/2 -translate-y-1/2 text-neutral-500 text-[9px] tracking-widest font-mono uppercase bg-neutral-950/90 px-2 py-0.5 rounded border border-neutral-800 opacity-0 transition-opacity duration-300 layer-label">Liquid Lettuce Array</span>
+                    </div>
+
+                    <!-- Bottom Bun -->
+                    <div class="burger-layer absolute transform transition-all duration-500 ease-out z-10" style="top: 220px;" data-depth="0.9">
+                        <svg width="230" height="50" viewBox="0 0 230 50" fill="none">
+                            <path d="M15 10C15 10 15 40 40 40H190C215 40 215 10 215 10C215 10 160 20 115 20C70 20 15 10 15 10Z" fill="#E5A65D" stroke="#C4843D" stroke-width="2"/>
+                        </svg>
+                        <span class="absolute right-[-110px] top-1/2 -translate-y-1/2 text-neutral-500 text-[9px] tracking-widest font-mono uppercase bg-neutral-950/90 px-2 py-0.5 rounded border border-neutral-800 opacity-0 transition-opacity duration-300 layer-label">Solid Base Standard</span>
+                    </div>
+                </div>
+
+                <!-- Ground shadow -->
+                <div class="w-64 h-6 bg-gradient-to-r from-neutral-800 to-neutral-900 rounded-full blur-sm opacity-60 mt-12"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRODUCT LINEUP -->
+    <section id="lineup" class="py-32 bg-neutral-950 text-white relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-24">
+                <h2 class="text-xs uppercase tracking-widest text-[#FFC72C] font-semibold mb-4">The Culinary Hardware Standard</h2>
+                <p class="text-4xl md:text-6xl font-extrabold tracking-tight">Which McApple is right for you?</p>
+                <p class="text-neutral-400 mt-4 max-w-xl mx-auto">Explore precision-designed models engineered to satisfy every level of hunger. Designed in Cupertino, assembled in McKitchen.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Card 1: McApple Lite (image_f1dfa9.jpg) -->
+                <div class="glass hover-lift rounded-3xl p-6 flex flex-col justify-between items-center text-center relative overflow-hidden group border border-neutral-900">
+                    <div class="absolute top-4 right-4 bg-neutral-900/80 border border-neutral-800 text-[9px] text-[#FFC72C] tracking-widest uppercase px-3 py-1 rounded-full z-10">
+                        Entry Level
+                    </div>
+                    <div class="w-full">
+                        <div class="w-full h-48 rounded-2xl overflow-hidden my-4 relative shadow-inner bg-neutral-900">
+                            <img src="image_f1dfa9.jpg" alt="McApple Lite" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80';">
+                        </div>
+                        <h3 class="text-2xl font-bold mb-1">McApple Lite</h3>
+                        <p class="text-neutral-500 text-xs tracking-wide uppercase mb-6">Incredibly Slim. Classic Build.</p>
+                        
+                        <ul class="space-y-3 text-sm text-neutral-400 border-t border-neutral-900 pt-6 mb-8 text-left">
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>1 Extra Pickle Core</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>Classic Cheese Engine v1</span>
+                            </li>
+                            <li class="flex items-center space-x-2 text-neutral-600">
+                                <span>✕</span> <span class="line-through">Dynamic Bun Technology</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="w-full">
+                        <p class="text-3xl font-extrabold mb-1">$799<span class="text-xs text-neutral-500 font-normal">.00</span></p>
+                        <p class="text-[10px] text-neutral-500 mb-6 font-mono">Or $33.29/mo. for 24 mo.*</p>
+                        <a href="#order" onclick="selectConfigItem('burger', 'lite')" class="block w-full py-3 bg-neutral-900 hover:bg-white hover:text-black rounded-xl text-xs font-semibold tracking-wider transition-colors text-center">
+                            Select Model
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 2: McApple Standard (image_f1dfe4.jpg) -->
+                <div class="glass hover-lift rounded-3xl p-6 flex flex-col justify-between items-center text-center relative overflow-hidden group border border-neutral-900">
+                    <div class="absolute top-4 right-4 bg-neutral-900/80 border border-neutral-800 text-[9px] text-[#FFC72C] tracking-widest uppercase px-3 py-1 rounded-full z-10">
+                        Popular
+                    </div>
+                    <div class="w-full">
+                        <div class="w-full h-48 rounded-2xl overflow-hidden my-4 relative shadow-inner bg-neutral-900">
+                            <img src="image_f1dfe4.jpg" alt="McApple Standard" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80';">
+                        </div>
+                        <h3 class="text-2xl font-bold mb-1">McApple</h3>
+                        <p class="text-neutral-500 text-xs tracking-wide uppercase mb-6">The Standard for Daily Performance.</p>
+                        
+                        <ul class="space-y-3 text-sm text-neutral-400 border-t border-neutral-900 pt-6 mb-8 text-left">
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>2 Extra Pickles (A2 Core)</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>Enriched Bun v2</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>Enhanced Cheese Engine</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="w-full">
+                        <p class="text-3xl font-extrabold mb-1">$899<span class="text-xs text-neutral-500 font-normal">.00</span></p>
+                        <p class="text-[10px] text-neutral-500 mb-6 font-mono">Or $37.45/mo. for 24 mo.*</p>
+                        <a href="#order" onclick="selectConfigItem('burger', 'standard')" class="block w-full py-3 bg-neutral-900 hover:bg-white hover:text-black rounded-xl text-xs font-semibold tracking-wider transition-colors text-center">
+                            Select Model
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 3: McApple Pro (image_f1e006.jpg) -->
+                <div class="glass hover-lift border-[#FFC72C]/20 border rounded-3xl p-6 flex flex-col justify-between items-center text-center relative overflow-hidden group">
+                    <div class="absolute top-4 right-4 bg-[#FFC72C] text-black text-[9px] font-extrabold tracking-widest uppercase px-3 py-1 rounded-full z-10">
+                        Professional Standard
+                    </div>
+                    <div class="w-full">
+                        <div class="w-full h-48 rounded-2xl overflow-hidden my-4 relative shadow-inner bg-neutral-900">
+                            <img src="image_f1e006.jpg" alt="McApple Pro" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80';">
+                        </div>
+                        <h3 class="text-2xl font-bold mb-1 text-transparent bg-clip-text bg-gradient-to-r from-white via-yellow-100 to-[#FFC72C]">McApple Pro</h3>
+                        <p class="text-neutral-500 text-xs tracking-wide uppercase mb-6">High-Yield Dynamic Bun Hardware.</p>
+                        
+                        <ul class="space-y-3 text-sm text-neutral-400 border-t border-neutral-900 pt-6 mb-8 text-left">
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>Dynamic Bun Customization</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>Ultra Crispy Fries Support</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>Powered by M4 McChip</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="w-full">
+                        <p class="text-3xl font-extrabold mb-1">$999<span class="text-xs text-neutral-500 font-normal">.00</span></p>
+                        <p class="text-[10px] text-neutral-500 mb-6 font-mono">Or $41.62/mo. for 24 mo.*</p>
+                        <a href="#order" onclick="selectConfigItem('burger', 'pro')" class="block w-full py-3 bg-[#FFC72C] text-black hover:bg-white rounded-xl text-xs font-semibold tracking-wider transition-all duration-300 text-center">
+                            Select Model
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Card 4: McApple Pro Max (image_f1e024.jpg) -->
+                <div class="glass hover-lift border-neutral-800 rounded-3xl p-6 flex flex-col justify-between items-center text-center relative overflow-hidden group">
+                    <div class="absolute top-4 right-4 bg-gradient-to-r from-red-600 to-[#FFC72C] text-white text-[9px] font-extrabold tracking-widest uppercase px-3 py-1 rounded-full z-10">
+                        Maximum Capacity
+                    </div>
+                    <div class="w-full">
+                        <div class="w-full h-48 rounded-2xl overflow-hidden my-4 relative shadow-inner bg-neutral-900">
+                            <img src="image_f1e024.jpg" alt="McApple Pro Max" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1521305916504-4a1121188589?auto=format&fit=crop&w=600&q=80';">
+                        </div>
+                        <h3 class="text-2xl font-bold mb-1">McApple Pro Max</h3>
+                        <p class="text-neutral-500 text-xs tracking-wide uppercase mb-6">Culinary Overkill. Zero Friction.</p>
+                        
+                        <ul class="space-y-3 text-sm text-neutral-400 border-t border-neutral-900 pt-6 mb-8 text-left">
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>Overclocked Sesame Grid</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>Dual Cheese Cores</span>
+                            </li>
+                            <li class="flex items-center space-x-2">
+                                <span class="text-[#FFC72C]">✔</span> <span>Infinite AI Sauce Prediction</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="w-full">
+                        <p class="text-3xl font-extrabold mb-1">$1,199<span class="text-xs text-neutral-500 font-normal">.00</span></p>
+                        <p class="text-[10px] text-neutral-500 mb-6 font-mono">Or $49.95/mo. for 24 mo.*</p>
+                        <a href="#order" onclick="selectConfigItem('burger', 'promax')" class="block w-full py-3 bg-white text-black hover:bg-[#FFC72C] rounded-xl text-xs font-semibold tracking-wider transition-colors text-center">
+                            Select Model
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-center text-[10px] text-neutral-600 tracking-widest mt-16 font-mono uppercase">
+                * Eating utensils, napkins, and power charging cables sold separately. Free chewing application update required.
+            </p>
+        </div>
+    </section>
+
+    <!-- MASSIVE HERO SHOWCASE FOR FRIES PRO AIR -->
+    <section class="py-32 bg-white text-black relative overflow-hidden border-t border-neutral-200">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+            
+            <div class="lg:col-span-7 relative group">
+                <!-- Extremely massive, highly premium display card for Fries Pro Air -->
+                <div class="relative w-full aspect-[4/3] rounded-[40px] overflow-hidden shadow-2xl bg-neutral-950 p-12 flex flex-col justify-end transition-all duration-500 border border-neutral-200">
+                    <div class="absolute inset-0">
+                        <img src="fries_pro_air.jpg" alt="Fries Pro Air" class="w-full h-full object-cover opacity-85 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=1200&q=80';">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                    
+                    <div class="relative z-10 space-y-2">
+                        <span class="text-[#FFC72C] text-xs uppercase tracking-widest font-mono font-bold">Showcase Blueprint — fries_pro_air.jpg</span>
+                        <h4 class="text-white text-4xl font-black tracking-tight">Fries Pro Air</h4>
+                        <p class="text-neutral-300 text-sm max-w-lg font-light leading-relaxed">
+                            Structured perfectly out of state-grown golden Idaho alloys. Overclocked to an absolute crunch.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-5 space-y-6">
+                <span class="text-xs font-semibold tracking-widest uppercase text-neutral-400 font-mono">Overclocked Crunch</span>
+                <h3 class="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+                    Fries Pro Air.<br>Crispy to the millimeter.
+                </h3>
+                <p class="text-neutral-600 text-lg font-light leading-relaxed">
+                    We designed Fries Pro Air down to structural fundamentals. Constructed utilizing premium high-tensile Idaho potatoes and thermal finished dynamically to match elite crunch indexes. Perfect audio feedback with every single bite.
+                </p>
+                <div class="pt-4 flex items-center justify-between border-t border-neutral-200">
+                    <div>
+                        <span class="text-[10px] text-neutral-500 uppercase tracking-widest font-mono block">Premium Hardware Add-on</span>
+                        <span class="text-2xl font-extrabold text-black">$199.00</span>
+                    </div>
+                    <a href="#order" class="bg-black text-white hover:bg-[#FFC72C] hover:text-black font-semibold text-xs tracking-wider px-6 py-3 rounded-full transition-all duration-300 uppercase">
+                        Configure Fries
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- THE MCAPPLE ECOSYSTEM STORE (REPLACES GALLERY) -->
+    <section id="ecosystem" class="py-32 bg-neutral-950 text-white relative border-t border-neutral-900">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-24">
+                <h2 class="text-xs uppercase tracking-widest text-[#FFC72C] font-semibold mb-4 font-mono">Accessories & Peripherals</h2>
+                <p class="text-4xl md:text-6xl font-extrabold tracking-tight">The McApple Ecosystem</p>
+                <p class="text-neutral-400 mt-4 max-w-xl mx-auto font-light">Explore a premium array of secondary systems engineered with clean design lines and dedicated flavor matrices.</p>
+            </div>
+
+            <!-- Highly organized grid of 8 Ecosystem products -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                
+                <!-- Product 1: iFlurry (iflurry.jpg) -->
+                <div class="glass hover-lift border-neutral-900 rounded-3xl p-6 flex flex-col justify-between items-start text-left group">
+                    <div class="w-full">
+                        <div class="w-full aspect-square rounded-2xl overflow-hidden mb-6 relative bg-neutral-900 border border-neutral-800">
+                            <img src="iflurry.jpg" alt="iFlurry" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80';">
+                            <div class="absolute top-3 right-3 bg-neutral-950/80 border border-neutral-800 text-[8px] text-[#FFC72C] tracking-widest uppercase px-2 py-0.5 rounded font-mono">
+                                Soft-Serve Core
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">iFlurry</h3>
+                        <p class="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+                            Constructed with a dynamic, ultra-rich dairy soft-serve crystal matrix to maximize velvety cooling states.
+                        </p>
+                    </div>
+                    <div class="w-full border-t border-neutral-900 pt-4 flex justify-between items-center">
+                        <span class="text-lg font-extrabold text-[#FFC72C]">$149.00</span>
+                        <button onclick="addEcosystemItem('iFlurry', 149)" class="bg-neutral-900 hover:bg-white hover:text-black text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full transition-all">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 2: PiePad (piepad.jpg) -->
+                <div class="glass hover-lift border-neutral-900 rounded-3xl p-6 flex flex-col justify-between items-start text-left group">
+                    <div class="w-full">
+                        <div class="w-full aspect-square rounded-2xl overflow-hidden mb-6 relative bg-neutral-900 border border-neutral-800">
+                            <img src="piepad.jpg" alt="PiePad" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1519869325930-281384150729?auto=format&fit=crop&w=600&q=80';">
+                            <div class="absolute top-3 right-3 bg-neutral-950/80 border border-neutral-800 text-[8px] text-[#FFC72C] tracking-widest uppercase px-2 py-0.5 rounded font-mono">
+                                Thermal Bake
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">PiePad</h3>
+                        <p class="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+                            Crispy, golden-crusted thermal pastry envelope filled perfectly with an organic cinnamon apple filling.
+                        </p>
+                    </div>
+                    <div class="w-full border-t border-neutral-900 pt-4 flex justify-between items-center">
+                        <span class="text-lg font-extrabold text-[#FFC72C]">$129.00</span>
+                        <button onclick="addEcosystemItem('PiePad', 129)" class="bg-neutral-900 hover:bg-white hover:text-black text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full transition-all">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 3: Mac Brown (mac_brown.jpg) -->
+                <div class="glass hover-lift border-neutral-900 rounded-3xl p-6 flex flex-col justify-between items-start text-left group">
+                    <div class="w-full">
+                        <div class="w-full aspect-square rounded-2xl overflow-hidden mb-6 relative bg-neutral-900 border border-neutral-800">
+                            <img src="mac_brown.jpg" alt="Mac Brown" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80';">
+                            <div class="absolute top-3 right-3 bg-neutral-950/80 border border-neutral-800 text-[8px] text-[#FFC72C] tracking-widest uppercase px-2 py-0.5 rounded font-mono">
+                                Silicon crisp
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Mac Brown</h3>
+                        <p class="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+                            An overclocked, golden-crisped hash brown potato lattice structure designed to nest beautifully inside your morning loop.
+                        </p>
+                    </div>
+                    <div class="w-full border-t border-neutral-900 pt-4 flex justify-between items-center">
+                        <span class="text-lg font-extrabold text-[#FFC72C]">$89.00</span>
+                        <button onclick="addEcosystemItem('Mac Brown', 89)" class="bg-neutral-900 hover:bg-white hover:text-black text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full transition-all">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 4: AirNuggets (air_nuggets.jpg) -->
+                <div class="glass hover-lift border-neutral-900 rounded-3xl p-6 flex flex-col justify-between items-start text-left group">
+                    <div class="w-full">
+                        <div class="w-full aspect-square rounded-2xl overflow-hidden mb-6 relative bg-neutral-900 border border-neutral-800">
+                            <img src="air_nuggets.jpg" alt="AirNuggets" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1562967914-6c07c4689cdb?auto=format&fit=crop&w=600&q=80';">
+                            <div class="absolute top-3 right-3 bg-neutral-950/80 border border-neutral-800 text-[8px] text-[#FFC72C] tracking-widest uppercase px-2 py-0.5 rounded font-mono">
+                                Seamless Bite
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">AirNuggets</h3>
+                        <p class="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+                            Crispy, golden-crusted shells housing premium, seamless white meat cores with optimized structural density.
+                        </p>
+                    </div>
+                    <div class="w-full border-t border-neutral-900 pt-4 flex justify-between items-center">
+                        <span class="text-lg font-extrabold text-[#FFC72C]">$299.00</span>
+                        <button onclick="addEcosystemItem('AirNuggets', 299)" class="bg-neutral-900 hover:bg-white hover:text-black text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full transition-all">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 5: M-Series BBQ Sauce (m_series_bbq.jpg) -->
+                <div class="glass hover-lift border-neutral-900 rounded-3xl p-6 flex flex-col justify-between items-start text-left group">
+                    <div class="w-full">
+                        <div class="w-full aspect-square rounded-2xl overflow-hidden mb-6 relative bg-neutral-900 border border-neutral-800">
+                            <img src="m_series_bbq.jpg" alt="M-Series BBQ sauce" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1607532941433-304659e8198a?auto=format&fit=crop&w=600&q=80';">
+                            <div class="absolute top-3 right-3 bg-neutral-950/80 border border-neutral-800 text-[8px] text-[#FFC72C] tracking-widest uppercase px-2 py-0.5 rounded font-mono">
+                                Fluid Chip
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">M-Series BBQ</h3>
+                        <p class="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+                            High-viscosity sweet, tangy, and smoky sauce emulsion designed to accelerate every crisp payload bite-index.
+                        </p>
+                    </div>
+                    <div class="w-full border-t border-neutral-900 pt-4 flex justify-between items-center">
+                        <span class="text-lg font-extrabold text-[#FFC72C]">$49.00</span>
+                        <button onclick="addEcosystemItem('M-Series BBQ', 49)" class="bg-neutral-900 hover:bg-white hover:text-black text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full transition-all">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 6: iMuffin (imuffin.jpg) -->
+                <div class="glass hover-lift border-neutral-900 rounded-3xl p-6 flex flex-col justify-between items-start text-left group">
+                    <div class="w-full">
+                        <div class="w-full aspect-square rounded-2xl overflow-hidden mb-6 relative bg-neutral-900 border border-neutral-800">
+                            <img src="imuffin.jpg" alt="iMuffin" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&w=600&q=80';">
+                            <div class="absolute top-3 right-3 bg-neutral-950/80 border border-neutral-800 text-[8px] text-[#FFC72C] tracking-widest uppercase px-2 py-0.5 rounded font-mono">
+                                AM Process
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">iMuffin</h3>
+                        <p class="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+                            Precision-circular egg module paired perfectly with a high-tensile toasted English muffin alloy and Canadian ham.
+                        </p>
+                    </div>
+                    <div class="w-full border-t border-neutral-900 pt-4 flex justify-between items-center">
+                        <span class="text-lg font-extrabold text-[#FFC72C]">$249.00</span>
+                        <button onclick="addEcosystemItem('iMuffin', 249)" class="bg-neutral-900 hover:bg-white hover:text-black text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full transition-all">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 7: Liquid Milkshake (liquid_milkshake.jpg) -->
+                <div class="glass hover-lift border-neutral-900 rounded-3xl p-6 flex flex-col justify-between items-start text-left group">
+                    <div class="w-full">
+                        <div class="w-full aspect-square rounded-2xl overflow-hidden mb-6 relative bg-neutral-900 border border-neutral-800">
+                            <img src="liquid_milkshake.jpg" alt="Liquid Milkshake" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=600&q=80';">
+                            <div class="absolute top-3 right-3 bg-neutral-950/80 border border-neutral-800 text-[8px] text-[#FFC72C] tracking-widest uppercase px-2 py-0.5 rounded font-mono">
+                                Triple Flavor
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Liquid Milkshake</h3>
+                        <p class="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+                            Liquid cooling system optimized in triple flavor profiles: Chocolate Core, Vanilla Soft, and Coffee Brew.
+                        </p>
+                    </div>
+                    <div class="w-full border-t border-neutral-900 pt-4 flex justify-between items-center">
+                        <span class="text-lg font-extrabold text-[#FFC72C]">$199.00</span>
+                        <button onclick="addEcosystemItem('Liquid Milkshake', 199)" class="bg-neutral-900 hover:bg-white hover:text-black text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full transition-all">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 8: Donut Pros (donut_pros.jpg) -->
+                <div class="glass hover-lift border-neutral-900 rounded-3xl p-6 flex flex-col justify-between items-start text-left group">
+                    <div class="w-full">
+                        <div class="w-full aspect-square rounded-2xl overflow-hidden mb-6 relative bg-neutral-900 border border-neutral-800">
+                            <img src="donut_pros.jpg" alt="Donut Pros" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1514517604298-cf80e0fb7f1e?auto=format&fit=crop&w=600&q=80';">
+                            <div class="absolute top-3 right-3 bg-neutral-950/80 border border-neutral-800 text-[8px] text-[#FFC72C] tracking-widest uppercase px-2 py-0.5 rounded font-mono">
+                                Glaze Only
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Donut Pros</h3>
+                        <p class="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+                            Exquisite single-ring donut geometry covered flawlessly in classic sugar glaze to keep processing latency zero.
+                        </p>
+                    </div>
+                    <div class="w-full border-t border-neutral-900 pt-4 flex justify-between items-center">
+                        <span class="text-lg font-extrabold text-[#FFC72C]">$119.00</span>
+                        <button onclick="addEcosystemItem('Donut Pros', 119)" class="bg-neutral-900 hover:bg-white hover:text-black text-[10px] font-bold tracking-widest uppercase px-4 py-2 rounded-full transition-all">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- SPECIFICATIONS MATRIX -->
+    <section id="comparisons" class="py-32 bg-neutral-950 text-white relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20">
+                <h2 class="text-xs uppercase tracking-widest text-[#FFC72C] font-semibold mb-4 font-mono">The Precision Metric Matrix</h2>
+                <p class="text-4xl md:text-5xl font-black tracking-tight">Compare Culinary Specifications</p>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-left min-w-[700px]">
+                    <thead>
+                        <tr class="border-b border-neutral-900">
+                            <th class="py-6 px-4 text-xs font-medium uppercase tracking-widest text-neutral-500 font-mono">Spec / Feature</th>
+                            <th class="py-6 px-4 text-sm font-bold text-center text-neutral-400">Lite</th>
+                            <th class="py-6 px-4 text-sm font-bold text-center text-neutral-300">Standard</th>
+                            <th class="py-6 px-4 text-sm font-bold text-center text-[#FFC72C]">Pro</th>
+                            <th class="py-6 px-4 text-sm font-bold text-center text-white bg-white/5 rounded-t-2xl">Pro Max</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-neutral-900 text-sm font-light">
+                        <tr>
+                            <td class="py-5 px-4 font-semibold text-neutral-400 font-mono">Pickles Count</td>
+                            <td class="py-5 px-4 text-center text-neutral-500">1 standard (A1)</td>
+                            <td class="py-5 px-4 text-center">2 premium (A2)</td>
+                            <td class="py-5 px-4 text-center text-[#FFC72C]">Haptic Pickle Core</td>
+                            <td class="py-5 px-4 text-center bg-white/5 font-semibold">Overclocked (4 pcs)</td>
+                        </tr>
+                        <tr>
+                            <td class="py-5 px-4 font-semibold text-neutral-400 font-mono">Cheese Engine</td>
+                            <td class="py-5 px-4 text-center text-neutral-500">Passive Cheddar</td>
+                            <td class="py-5 px-4 text-center">0.3% More Cheddar</td>
+                            <td class="py-5 px-4 text-center text-[#FFC72C]">Liquid Gold 2.0</td>
+                            <td class="py-5 px-4 text-center bg-white/5 font-semibold">Dual Cheese Fusion</td>
+                        </tr>
+                        <tr>
+                            <td class="py-5 px-4 font-semibold text-neutral-400 font-mono">Buns Technology</td>
+                            <td class="py-5 px-4 text-center text-neutral-500">Wheat Chassis</td>
+                            <td class="py-5 px-4 text-center">Enriched Bun v2</td>
+                            <td class="py-5 px-4 text-center text-[#FFC72C]">Dynamic Bun 3D</td>
+                            <td class="py-5 px-4 text-center bg-white/5 font-semibold">Haptic Sesame Matrix</td>
+                        </tr>
+                        <tr>
+                            <td class="py-5 px-4 font-semibold text-neutral-400 font-mono">AI Sauce Optimizer</td>
+                            <td class="py-5 px-4 text-center text-neutral-500">✕ None</td>
+                            <td class="py-5 px-4 text-center text-neutral-500">✕ None</td>
+                            <td class="py-5 px-4 text-center text-[#FFC72C]">Predictive Dip</td>
+                            <td class="py-5 px-4 text-center bg-white/5 font-semibold">Infinite AI Drizzle</td>
+                        </tr>
+                        <tr>
+                            <td class="py-5 px-4 font-semibold text-neutral-400 font-mono">Battery (Fries Heat)</td>
+                            <td class="py-5 px-4 text-center text-neutral-500">30m crisp lifecycle</td>
+                            <td class="py-5 px-4 text-center">1h crisp lifecycle</td>
+                            <td class="py-5 px-4 text-center text-[#FFC72C]">Fries Pro Air module</td>
+                            <td class="py-5 px-4 text-center bg-white/5 font-semibold">24h Stay-Crisp Core</td>
+                        </tr>
+                        <tr>
+                            <td class="py-5 px-4 font-semibold text-neutral-400 font-mono">Camera (Macro Lens)</td>
+                            <td class="py-5 px-4 text-center text-neutral-500">Single 12MP Sesame</td>
+                            <td class="py-5 px-4 text-center">Dual Sesame Array</td>
+                            <td class="py-5 px-4 text-center text-[#FFC72C]">Triple-Patty Macro</td>
+                            <td class="py-5 px-4 text-center bg-white/5 font-semibold">Cinematic 4K Bun Scan</td>
+                        </tr>
+                        <tr class="bg-neutral-900/40">
+                            <td class="py-6 px-4 font-bold text-neutral-300 font-mono">Performance Index</td>
+                            <td class="py-6 px-4 text-center text-xs text-neutral-500 italic">"Same burger. New box."</td>
+                            <td class="py-6 px-4 text-center text-xs text-neutral-500 italic">"Same burger. New pricing."</td>
+                            <td class="py-6 px-4 text-center text-xs text-[#FFC72C] italic">"Status symbol level."</td>
+                            <td class="py-6 px-4 text-center text-xs text-white bg-white/5 rounded-b-2xl italic font-semibold">"Requires training to swallow."</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTERACTIVE ORDER CONFIGURATOR -->
+    <section id="order" class="py-32 bg-white text-black relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-neutral-500 font-semibold mb-4 font-mono">McApple Custom Studio</h2>
+                <p class="text-4xl md:text-5xl font-black tracking-tight">Configure Your Ultimate Build</p>
+                <p class="text-neutral-500 mt-3">Tailor thermal indices. Optimize real-time sodium and fat levels.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                
+                <!-- Options configuration panels -->
+                <div class="lg:col-span-8 space-y-10">
+                    <!-- Step 1 -->
+                    <div class="bg-neutral-50 border border-neutral-200 rounded-3xl p-8 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs tracking-widest uppercase text-neutral-400 font-bold font-mono">Step 01</span>
+                            <span class="text-[10px] font-bold bg-black text-white px-3 py-1 rounded-full uppercase tracking-widest font-mono">Base engine</span>
+                        </div>
+                        <h3 class="text-2xl font-bold">Select Culinary Base Engine</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button onclick="setConfigOption('burger', 'lite', 799)" id="opt-burger-lite" class="config-btn border-2 border-neutral-200 hover:border-black rounded-2xl p-6 text-left transition-all focus:outline-none flex flex-col justify-between h-32">
+                                <span class="font-bold text-lg">McApple Lite</span>
+                                <span class="text-xs text-neutral-500 flex justify-between w-full"><span>1 Pickle Core</span> <span>$799</span></span>
+                            </button>
+                            <button onclick="setConfigOption('burger', 'pro', 999)" id="opt-burger-pro" class="config-btn border-2 border-[#FFC72C] bg-yellow-50/50 rounded-2xl p-6 text-left transition-all focus:outline-none flex flex-col justify-between h-32">
+                                <span class="font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-black to-[#FFC72C]">McApple Pro</span>
+                                <span class="text-xs text-neutral-600 flex justify-between w-full"><span>M4 McChip</span> <span>$999</span></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-neutral-50 border border-neutral-200 rounded-3xl p-8 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs tracking-widest uppercase text-neutral-400 font-bold font-mono">Step 02</span>
+                            <span class="text-[10px] font-bold bg-black text-white px-3 py-1 rounded-full uppercase tracking-widest font-mono">Crunch accelerator</span>
+                        </div>
+                        <h3 class="text-2xl font-bold">Select French Fry Payload</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <button onclick="setConfigOption('fries', 'small', 99)" id="opt-fries-small" class="config-btn border-2 border-neutral-200 hover:border-black rounded-2xl p-6 text-left transition-all focus:outline-none flex flex-col justify-between h-28">
+                                <span class="font-bold">Fries Lite</span>
+                                <span class="text-xs text-neutral-500">$99</span>
+                            </button>
+                            <button onclick="setConfigOption('fries', 'medium', 149)" id="opt-fries-medium" class="config-btn border-2 border-[#FFC72C] bg-yellow-50/50 rounded-2xl p-6 text-left transition-all focus:outline-none flex flex-col justify-between h-28">
+                                <span class="font-bold">Fries Air</span>
+                                <span class="text-xs text-neutral-500">$149</span>
+                            </button>
+                            <button onclick="setConfigOption('fries', 'promax', 199)" id="opt-fries-promax" class="config-btn border-2 border-neutral-200 hover:border-black rounded-2xl p-6 text-left transition-all focus:outline-none flex flex-col justify-between h-28">
+                                <span class="font-bold">Fries Pro Max</span>
+                                <span class="text-xs text-neutral-500">$199</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-neutral-50 border border-neutral-200 rounded-3xl p-8 space-y-6">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs tracking-widest uppercase text-neutral-400 font-bold font-mono">Step 03</span>
+                            <span class="text-[10px] font-bold bg-black text-white px-3 py-1 rounded-full uppercase tracking-widest font-mono">Hydration unit</span>
+                        </div>
+                        <h3 class="text-2xl font-bold">Liquid Hydration Cooler</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <button onclick="setConfigOption('drink', 'cola', 99)" id="opt-drink-cola" class="config-btn border-2 border-neutral-200 hover:border-black rounded-2xl p-6 text-left transition-all focus:outline-none flex flex-col justify-between h-28">
+                                <span class="font-bold">iSoda Flow</span>
+                                <span class="text-xs text-neutral-500">$99</span>
+                            </button>
+                            <button onclick="setConfigOption('drink', 'shake', 199)" id="opt-drink-shake" class="config-btn border-2 border-neutral-200 hover:border-black rounded-2xl p-6 text-left transition-all focus:outline-none flex flex-col justify-between h-28">
+                                <span class="font-bold">iShake Studio</span>
+                                <span class="text-xs text-neutral-500">$199</span>
+                            </button>
+                            <button onclick="setConfigOption('drink', 'coffee', 249)" id="opt-drink-coffee" class="config-btn border-2 border-neutral-200 hover:border-black rounded-2xl p-6 text-left transition-all focus:outline-none flex flex-col justify-between h-28">
+                                <span class="font-bold">McBrew Ultra</span>
+                                <span class="text-xs text-neutral-500">$249</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live sticky order summary box -->
+                <div class="lg:col-span-4 lg:sticky lg:top-28 space-y-6">
+                    <div class="bg-neutral-900 text-white rounded-3xl p-8 space-y-6 shadow-2xl">
+                        <h3 class="text-xl font-bold border-b border-neutral-800 pb-4">Your Custom McApple Build</h3>
+                        
+                        <div class="space-y-4 text-xs text-neutral-400 font-mono">
+                            <div class="flex justify-between">
+                                <span>Platform:</span>
+                                <span id="summary-burger" class="text-white font-bold">McApple Pro</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Fries:</span>
+                                <span id="summary-fries" class="text-white font-bold">Fries Air</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Hydration:</span>
+                                <span id="summary-drink" class="text-white font-bold">iSoda Flow</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar tracker -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-[10px] text-neutral-500 font-bold uppercase font-mono">
+                                <span>Calorie Throughput</span>
+                                <span id="summary-calories">1,420 kcal</span>
+                            </div>
+                            <div class="w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+                                <div id="calorie-progress" class="bg-[#FFC72C] h-full transition-all duration-500" style="width: 70%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-neutral-800 pt-6 space-y-2">
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-neutral-400 text-xs font-mono">Total Build Cost</span>
+                                <span class="text-4xl font-extrabold text-[#FFC72C]" id="summary-total">$1,268.00</span>
+                            </div>
+                            <p class="text-[10px] text-neutral-500 text-right font-mono">Or $52.83/mo. for 24 mo.</p>
+                        </div>
+
+                        <!-- Add To Cardboard box trigger -->
+                        <button onclick="triggerOrderCheckout()" class="w-full bg-[#FFC72C] text-black hover:bg-white font-bold py-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-300 transform active:scale-95 shadow-lg shadow-[#FFC72C]/10">
+                            Add to Cardboard Bag
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- REVIEWS SECTION -->
+    <section id="reviews" class="py-32 bg-neutral-950 text-white relative border-t border-neutral-900">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-24">
+                <h2 class="text-xs uppercase tracking-widest text-[#FFC72C] font-semibold mb-4 font-mono">The Verdict From Early Adopters</h2>
+                <p class="text-4xl md:text-5xl font-black tracking-tight font-mono">Early Review Diagnostics</p>
+            </div>
+
+            <!-- Reviews Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Review Card 1 -->
+                <div class="glass rounded-3xl p-8 flex flex-col justify-between space-y-6 scroll-reveal-card hover-lift">
+                    <div class="space-y-4">
+                        <div class="flex space-x-1 text-[#FFC72C]">
+                            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                        </div>
+                        <p class="text-neutral-300 text-sm italic leading-relaxed">
+                            "The cleanest burger unboxing experience I've ever had. Truly minimalist, clean packaging layout lines."
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs">Craig F.</h4>
+                        <span class="text-[9px] text-neutral-500 font-mono">SVP, Taste Engineering</span>
+                    </div>
+                </div>
+
+                <!-- Review Card 2 -->
+                <div class="glass rounded-3xl p-8 flex flex-col justify-between space-y-6 scroll-reveal-card hover-lift">
+                    <div class="space-y-4">
+                        <div class="flex space-x-1 text-[#FFC72C]">
+                            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                        </div>
+                        <p class="text-neutral-300 text-sm italic leading-relaxed">
+                            "I upgraded my burger config from the Lite edition. The extra cheese cores really speed up chew times."
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs">Marques B.</h4>
+                        <span class="text-[9px] text-neutral-500 font-mono">Tech Food Reviewer</span>
+                    </div>
+                </div>
+
+                <!-- Review Card 3 -->
+                <div class="glass rounded-3xl p-8 flex flex-col justify-between space-y-6 scroll-reveal-card hover-lift">
+                    <div class="space-y-4">
+                        <div class="flex space-x-1 text-[#FFC72C]">
+                            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                        </div>
+                        <p class="text-neutral-300 text-sm italic leading-relaxed">
+                            "Waiting for the Ultra edition to launch, but the current Pro version with M4 processing is spectacular."
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs">Linus T.</h4>
+                        <span class="text-[9px] text-neutral-500 font-mono">Hardware Gourmet</span>
+                    </div>
+                </div>
+
+                <!-- Review Card 4 -->
+                <div class="glass rounded-3xl p-8 flex flex-col justify-between space-y-6 scroll-reveal-card hover-lift">
+                    <div class="space-y-4">
+                        <div class="flex space-x-1 text-[#FFC72C]">
+                            <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                        </div>
+                        <p class="text-neutral-300 text-sm italic leading-relaxed">
+                            "The stay-crisp index on the Fries Pro Air is incredibly long. I ran them for 3 hours and still crunching."
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs">Sara W.</h4>
+                        <span class="text-[9px] text-neutral-500 font-mono">Food Beta Taster</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESTAURANT STATS -->
+    <section class="py-24 bg-neutral-900 text-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 lg:grid-cols-4 gap-12 text-center relative z-10">
+            <div class="space-y-2">
+                <p class="text-5xl md:text-6xl font-black text-[#FFC72C] font-mono" id="stat-customers" data-val="1000000">0</p>
+                <p class="text-neutral-500 text-xs uppercase tracking-widest font-mono">Happy Consumers</p>
+            </div>
+
+            <div class="space-y-2">
+                <p class="text-5xl md:text-6xl font-black text-white font-mono" id="stat-orders" data-val="500000">0</p>
+                <p class="text-neutral-500 text-xs uppercase tracking-widest font-mono">Orders Handled</p>
+            </div>
+
+            <div class="space-y-2">
+                <p class="text-5xl md:text-6xl font-black text-[#FFC72C] font-mono" id="stat-rating" data-val="4.9">0.0</p>
+                <p class="text-neutral-500 text-xs uppercase tracking-widest font-mono">Average Rating</p>
+            </div>
+
+            <div class="space-y-2">
+                <p class="text-5xl md:text-6xl font-black text-white font-mono" id="stat-recommend" data-val="99">0%</p>
+                <p class="text-neutral-500 text-xs uppercase tracking-widest font-mono">Would Recommend</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- BRAND PILLARS -->
+    <section id="pillars" class="py-32 bg-white text-black">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-24">
+                <h2 class="text-xs uppercase tracking-widest text-neutral-500 font-semibold mb-4 font-mono">Engineering Philosophy</h2>
+                <p class="text-4xl md:text-5xl font-black tracking-tight">The Pillars of McApple</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                <!-- Feature 1 -->
+                <div class="space-y-4 hover:bg-neutral-50 p-8 rounded-3xl transition-colors duration-300">
+                    <div class="w-12 h-12 bg-neutral-900 text-[#FFC72C] rounded-full flex items-center justify-center font-bold text-xl">
+                        ★
+                    </div>
+                    <h3 class="text-xl font-bold">Pure Organic Alloys</h3>
+                    <p class="text-neutral-500 text-sm leading-relaxed">
+                        Every single sesame seed, bun slice, and beef matrix layer is source-verified to match optimal quality thresholds.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="space-y-4 hover:bg-neutral-50 p-8 rounded-3xl transition-colors duration-300">
+                    <div class="w-12 h-12 bg-neutral-900 text-[#FFC72C] rounded-full flex items-center justify-center font-bold text-xl">
+                        ⚡
+                    </div>
+                    <h3 class="text-xl font-bold">High-Throughput Delivery</h3>
+                    <p class="text-neutral-500 text-sm leading-relaxed">
+                        Configured orders are transmitted dynamically to nearby distribution centers with virtually zero latency.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="space-y-4 hover:bg-neutral-50 p-8 rounded-3xl transition-colors duration-300">
+                    <div class="w-12 h-12 bg-neutral-900 text-[#FFC72C] rounded-full flex items-center justify-center font-bold text-xl">
+                        ❖
+                    </div>
+                    <h3 class="text-xl font-bold">Award-Winning UI/UX</h3>
+                    <p class="text-neutral-500 text-sm leading-relaxed">
+                        A sensory dining landscape engineered to feel premium and satisfying, inside and out.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HISTORIC TIMELINE -->
+    <section id="timeline" class="py-32 bg-neutral-950 text-white relative border-t border-neutral-900">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-24">
+                <h2 class="text-xs uppercase tracking-widest text-[#FFC72C] font-semibold mb-4 font-mono">Historical Milestones</h2>
+                <p class="text-4xl md:text-5xl font-black tracking-tight font-mono">Timeline of Innovation</p>
+            </div>
+
+            <div class="relative border-l-2 border-neutral-800 ml-4 md:ml-32 space-y-16">
+                <!-- Event 1 -->
+                <div class="relative pl-10 md:pl-20">
+                    <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-[#FFC72C] border-4 border-black"></div>
+                    <span class="absolute left-10 md:-left-24 top-0 font-mono text-2xl font-black text-neutral-600">2005</span>
+                    <h3 class="text-xl font-bold mb-2">Platform 1.0 Launch</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed">
+                        Announced our initial burger platform architecture featuring foundational patty scaling algorithms.
+                    </p>
+                </div>
+
+                <!-- Event 2 -->
+                <div class="relative pl-10 md:pl-20">
+                    <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-black"></div>
+                    <span class="absolute left-10 md:-left-24 top-0 font-mono text-2xl font-black text-neutral-600">2012</span>
+                    <h3 class="text-xl font-bold mb-2">Drive-Thru 2.0</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed">
+                        Unveiled optimized vehicle drive-thru channels with high-performance audio communication units.
+                    </p>
+                </div>
+
+                <!-- Event 3 -->
+                <div class="relative pl-10 md:pl-20">
+                    <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-[#FFC72C] border-4 border-black"></div>
+                    <span class="absolute left-10 md:-left-24 top-0 font-mono text-2xl font-black text-neutral-600">2018</span>
+                    <h3 class="text-xl font-bold mb-2">Cloud Delivery Protocol</h3>
+                    <p class="text-neutral-400 text-sm leading-relaxed">
+                        Bypassed physical store layouts by delivering orders instantly via localized delivery frameworks.
+                    </p>
+                </div>
+
+                <!-- Event 4 -->
+                <div class="relative pl-10 md:pl-20">
+                    <div class="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-black"></div>
+                    <span class="absolute left-10 md:-left-24 top-0 font-mono text-2xl font-black text-[#FFC72C]">2026</span>
+                    <h3 class="text-xl font-bold mb-2">The McApple Pro Max</h3>
+                    <p class="text-neutral-200 text-sm font-semibold leading-relaxed">
+                        Unparalleled design density featuring Dynamic Bun technologies and predictive AI Dip algorithms.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- OMNIPRESENT GLOBAL MAP & LOCATIONS -->
+    <section id="map" class="py-32 bg-white text-black relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-neutral-500 font-semibold mb-4 font-mono">Worldwide Fast Food Coverage</h2>
+                <p class="text-4xl md:text-5xl font-black tracking-tight">The Global Map</p>
+                <p class="text-neutral-500 mt-2 max-w-lg mx-auto">We are located everywhere. Covered completely in yellow to show absolute world dominance and accessibility.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <!-- World Map Container -->
+                <div class="lg:col-span-8 bg-neutral-900 border border-neutral-200 rounded-3xl overflow-hidden aspect-video relative shadow-2xl flex items-center justify-center group">
+                    
+                    <!-- Highly structured golden monochromatic map layer -->
+                    <img src="image_f1e402.png" alt="The Global Map" class="absolute inset-0 w-full h-full object-cover opacity-90 transition-transform duration-700 yellow-monochrome-map group-hover:scale-105" onerror="this.onerror=null; this.src='https://assets.grok.com/users/cbf3f12e-e381-4af9-b36b-a1f329350798/generated/d5208113-8eb9-49ad-9374-1e1c24196b48/image.jpg';">
+                    <div class="absolute inset-0 bg-[#FFC72C]/40 mix-blend-color pointer-events-none z-10"></div>
+                    <div class="absolute inset-0 bg-black/10 pointer-events-none z-10"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20 pointer-events-none z-10"></div>
+
+                    <!-- Blinking Combined McApple Hotspots across continents -->
+                    <div class="absolute z-20 w-full h-full pointer-events-none">
+                        <!-- Hotspot 1: Cupertino -->
+                        <div onclick="showStoreDetail('cupertino')" class="absolute cursor-pointer pointer-events-auto transform -translate-x-1/2 -translate-y-1/2 group/pin" style="left: 20%; top: 38%;">
+                            <div class="w-10 h-10 bg-[#FFC72C]/40 border border-[#FFC72C]/80 rounded-full flex items-center justify-center animate-ping absolute -inset-3"></div>
+                            <div class="bg-black border border-[#FFC72C] rounded-full p-1 shadow-xl hover:scale-110 transition-transform duration-300 glow-yellow relative">
+                                <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
+                                    <path d="M50 90C62.5 90 77 79 77 55C77 34.5 64 28 51.5 28C45.5 28 41.5 31 38.5 31C35.5 31 31 28 25.5 28C13 28 3.5 37.5 3.5 56C3.5 79 19 90 31.5 90C37 90 39.5 87.5 43.5 87.5C47.5 87.5 50 90 50 90Z" fill="#FFC72C"/>
+                                    <path d="M51.5 28C58.3 26.5 62.5 19 60.5 12C53.5 13 47.5 20 48.5 27Z" fill="#FFC72C"/>
+                                    <path d="M22 52C32 30 44 30 49 45C54 30 66 30 76 52" stroke="#111111" stroke-width="6.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span class="absolute top-10 left-1/2 -translate-x-1/2 bg-black text-white border border-neutral-800 text-[8px] font-mono tracking-wider px-2 py-0.5 rounded shadow-lg uppercase whitespace-nowrap opacity-0 group-hover/pin:opacity-100 transition-opacity">Cupertino Flagship</span>
+                        </div>
+
+                        <!-- Hotspot 2: Chicago -->
+                        <div onclick="showStoreDetail('chicago')" class="absolute cursor-pointer pointer-events-auto transform -translate-x-1/2 -translate-y-1/2 group/pin" style="left: 28%; top: 40%;">
+                            <div class="w-10 h-10 bg-white/40 border border-white/80 rounded-full flex items-center justify-center animate-ping absolute -inset-3"></div>
+                            <div class="bg-black border border-white rounded-full p-1 shadow-xl hover:scale-110 transition-transform duration-300 relative">
+                                <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
+                                    <path d="M50 90C62.5 90 77 79 77 55C77 34.5 64 28 51.5 28C45.5 28 41.5 31 38.5 31C35.5 31 31 28 25.5 28C13 28 3.5 37.5 3.5 56C3.5 79 19 90 31.5 90C37 90 39.5 87.5 43.5 87.5C47.5 87.5 50 90 50 90Z" fill="#ffffff"/>
+                                    <path d="M51.5 28C58.3 26.5 62.5 19 60.5 12C53.5 13 47.5 20 48.5 27Z" fill="#ffffff"/>
+                                    <path d="M22 52C32 30 44 30 49 45C54 30 66 30 76 52" stroke="#111111" stroke-width="6.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span class="absolute top-10 left-1/2 -translate-x-1/2 bg-black text-white border border-neutral-800 text-[8px] font-mono tracking-wider px-2 py-0.5 rounded shadow-lg uppercase whitespace-nowrap opacity-0 group-hover/pin:opacity-100 transition-opacity">Chicago Downtown</span>
+                        </div>
+
+                        <!-- Hotspot 3: London -->
+                        <div onclick="showStoreDetail('london')" class="absolute cursor-pointer pointer-events-auto transform -translate-x-1/2 -translate-y-1/2 group/pin" style="left: 48%; top: 32%;">
+                            <div class="w-10 h-10 bg-[#FFC72C]/40 border border-[#FFC72C]/80 rounded-full flex items-center justify-center animate-ping absolute -inset-3"></div>
+                            <div class="bg-black border border-[#FFC72C] rounded-full p-1 shadow-xl hover:scale-110 transition-transform duration-300 glow-yellow relative">
+                                <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
+                                    <path d="M50 90C62.5 90 77 79 77 55C77 34.5 64 28 51.5 28C45.5 28 41.5 31 38.5 31C35.5 31 31 28 25.5 28C13 28 3.5 37.5 3.5 56C3.5 79 19 90 31.5 90C37 90 39.5 87.5 43.5 87.5C47.5 87.5 50 90 50 90Z" fill="#FFC72C"/>
+                                    <path d="M51.5 28C58.3 26.5 62.5 19 60.5 12C53.5 13 47.5 20 48.5 27Z" fill="#FFC72C"/>
+                                    <path d="M22 52C32 30 44 30 49 45C54 30 66 30 76 52" stroke="#111111" stroke-width="6.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span class="absolute top-10 left-1/2 -translate-x-1/2 bg-black text-white border border-neutral-800 text-[8px] font-mono tracking-wider px-2 py-0.5 rounded shadow-lg uppercase whitespace-nowrap opacity-0 group-hover/pin:opacity-100 transition-opacity">London Studio Hub</span>
+                        </div>
+
+                        <!-- Hotspot 4: Tokyo -->
+                        <div onclick="showStoreDetail('tokyo')" class="absolute cursor-pointer pointer-events-auto transform -translate-x-1/2 -translate-y-1/2 group/pin" style="left: 85%; top: 44%;">
+                            <div class="w-10 h-10 bg-[#FFC72C]/40 border border-[#FFC72C]/80 rounded-full flex items-center justify-center animate-ping absolute -inset-3"></div>
+                            <div class="bg-black border border-[#FFC72C] rounded-full p-1 shadow-xl hover:scale-110 transition-transform duration-300 glow-yellow relative">
+                                <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
+                                    <path d="M50 90C62.5 90 77 79 77 55C77 34.5 64 28 51.5 28C45.5 28 41.5 31 38.5 31C35.5 31 31 28 25.5 28C13 28 3.5 37.5 3.5 56C3.5 79 19 90 31.5 90C37 90 39.5 87.5 43.5 87.5C47.5 87.5 50 90 50 90Z" fill="#FFC72C"/>
+                                    <path d="M51.5 28C58.3 26.5 62.5 19 60.5 12C53.5 13 47.5 20 48.5 27Z" fill="#FFC72C"/>
+                                    <path d="M22 52C32 30 44 30 49 45C54 30 66 30 76 52" stroke="#111111" stroke-width="6.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span class="absolute top-10 left-1/2 -translate-x-1/2 bg-black text-white border border-neutral-800 text-[8px] font-mono tracking-wider px-2 py-0.5 rounded shadow-lg uppercase whitespace-nowrap opacity-0 group-hover/pin:opacity-100 transition-opacity">Tokyo Ginza Hub</span>
+                        </div>
+                    </div>
+
+                    <div class="absolute bottom-4 left-4 bg-neutral-950/90 border border-neutral-800 px-3 py-1.5 rounded-xl z-20">
+                        <p class="text-[9px] text-neutral-400 font-mono tracking-widest uppercase">Click Glowing Logos on The Global Map to inspect</p>
+                    </div>
+                </div>
+
+                <!-- Live Hub Details -->
+                <div class="lg:col-span-4 bg-neutral-50 rounded-3xl p-8 border border-neutral-200 space-y-6">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-neutral-400 font-mono">Hub Coordinates</h3>
+                    <div id="store-details" class="space-y-4">
+                        <h4 class="text-2xl font-black" id="store-name">Cupertino Flagship Hub</h4>
+                        <p class="text-neutral-600 text-sm" id="store-desc">Located right beside Infinite Loop. Features full wood-slat maple composite layouts and space-gray dining platter trays.</p>
+                        <ul class="space-y-2 text-xs font-mono text-neutral-500">
+                            <li><strong>Hours:</strong> <span id="store-hours">07:00 AM - 11:00 PM</span></li>
+                            <li><strong>Ph:</strong> <span id="store-phone">1-800-MY-MCAPPLE</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section id="faq" class="py-32 bg-neutral-950 text-white border-t border-neutral-900">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-24">
+                <h2 class="text-xs uppercase tracking-widest text-[#FFC72C] font-semibold mb-4 font-mono">FAQ Support</h2>
+                <p class="text-4xl md:text-5xl font-black tracking-tight font-mono">Frequently Asked Diagnostics</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="border-b border-neutral-800 pb-4">
+                    <button class="w-full flex justify-between items-center text-left py-4 focus:outline-none" onclick="toggleAccordion('faq-1')">
+                        <span class="font-bold text-lg">Why is the Pro Max edition so expensive?</span>
+                        <span class="text-[#FFC72C] font-bold" id="faq-1-icon">+</span>
+                    </button>
+                    <div id="faq-1" class="hidden text-neutral-400 text-sm leading-relaxed pb-4">
+                        The McApple Pro Max relies on state-of-the-art dynamic heat shields and dual cheese cores that require expensive engineering tolerances. It is built for absolute food connoisseurs.
+                    </div>
+                </div>
+
+                <div class="border-b border-neutral-800 pb-4">
+                    <button class="w-full flex justify-between items-center text-left py-4 focus:outline-none" onclick="toggleAccordion('faq-2')">
+                        <span class="font-bold text-lg">Does the charger come included with standard French Fries?</span>
+                        <span class="text-[#FFC72C] font-bold" id="faq-2-icon">+</span>
+                    </button>
+                    <div id="faq-2" class="hidden text-neutral-400 text-sm leading-relaxed pb-4">
+                        No. Out of our environmental commitment to reduce cardboard waste, power-charge dipping containers and salt dispensers must be acquired separately.
+                    </div>
+                </div>
+
+                <div class="border-b border-neutral-800 pb-4">
+                    <button class="w-full flex justify-between items-center text-left py-4 focus:outline-none" onclick="toggleAccordion('faq-3')">
+                        <span class="font-bold text-lg">Can I transfer my pickles from Lite to the Pro?</span>
+                        <span class="text-[#FFC72C] font-bold" id="faq-3-icon">+</span>
+                    </button>
+                    <div id="faq-3" class="hidden text-neutral-400 text-sm leading-relaxed pb-4">
+                        Pickle migration is fully supported via our cloud-sync flavor network. Simply authorize the migration on your local terminal during pickup.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="py-32 bg-black text-neutral-400 border-t border-neutral-900 text-center relative overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#FFC72C]/5 blur-[150px] pointer-events-none"></div>
+
+        <div class="max-w-4xl mx-auto px-6 space-y-12 relative z-10">
+            <h2 class="text-4xl md:text-6xl font-black text-white tracking-tight leading-none">Hungry?</h2>
+            <p class="text-neutral-500 text-lg font-light max-w-sm mx-auto">
+                Secure your next-generation bite today. Custom setups ready for transfer.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="#order" class="w-full sm:w-auto bg-[#FFC72C] text-black font-semibold text-xs tracking-wider uppercase px-8 py-4 rounded-full transition-all duration-300 hover:bg-white">
+                    Order Now
+                </a>
+                <a href="#map" class="w-full sm:w-auto bg-neutral-900 text-white hover:bg-neutral-800 border border-neutral-800 font-semibold text-xs tracking-wider uppercase px-8 py-4 rounded-full transition-all duration-300">
+                    Find Hub Location
+                </a>
+            </div>
+
+            <div class="border-t border-neutral-900 pt-16 space-y-4 text-[11px] max-w-2xl mx-auto">
+                <p class="text-neutral-600 uppercase tracking-widest font-mono text-[9px]">Official Parody Design Studio</p>
+                <p class="leading-relaxed text-neutral-600">
+                    This is a fictional parody concept website designed exclusively for showcase, design study, and creative video formats. It is not affiliated, sponsored, associated, or endorsed by McDonald's Corporation, Apple Inc., or any of their legal subsidiaries. All depicted photographic artwork, layout titles, and pricing structures are humorous references.
+                </p>
+                <p class="text-[#FFC72C] font-mono text-[10px] pt-4">© 2026 McApple Studio. All calories reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE SCRIPTS -->
+    <script>
+        // Configurator status
+        const configState = {
+            burger: { type: 'pro', price: 999, name: 'McApple Pro', kcal: 920 },
+            fries: { type: 'medium', price: 149, name: 'Fries Air', kcal: 350 },
+            drink: { type: 'cola', price: 99, name: 'iSoda Flow', kcal: 150 }
+        };
+
+        // Fictional stores directory coordinates
+        const storeDirectory = {
+            cupertino: {
+                name: "Cupertino Flagship Hub",
+                desc: "Located right beside Infinite Loop. Features full natural maple wood slats, custom air filtration, and space-gray dynamic food trays.",
+                hours: "07:00 AM - 11:00 PM",
+                phone: "1-800-MY-MCAPPLE"
+            },
+            chicago: {
+                name: "Chicago Downtown Hub",
+                desc: "An incredible custom architectural layout built directly over Chicago Riverwalk. Features panoramic glass structures and 24h drive-thru capabilities.",
+                hours: "Open 24 Hours",
+                phone: "1-800-CHI-MCAPPLE"
+            },
+            london: {
+                name: "London Studio Hub",
+                desc: "Set in Covent Garden inside a heritage brick building with minimalist glass panels. High-speed table ordering and premium hot-stands.",
+                hours: "08:00 AM - Midnight",
+                phone: "44-20-MY-MCAPPLE"
+            },
+            tokyo: {
+                name: "Tokyo Ginza Hub",
+                desc: "Multi-story luxury digital dining concept with vertical automated food lift delivery systems. Perfect zero-latency ordering experience.",
+                hours: "06:00 AM - Midnight",
+                phone: "81-3-MY-MCAPPLE"
+            }
+        };
+
+        // Preloader tracking index
+        window.onload = function() {
+            let progress = 0;
+            const bar = document.getElementById('loader-progress');
+            const percent = document.getElementById('loader-percent');
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 15) + 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const loader = document.getElementById('loader');
+                        loader.classList.add('opacity-0');
+                        setTimeout(() => {
+                            loader.style.display = 'none';
+                            initAnimations();
+                        }, 1000);
+                    }, 200);
+                }
+                bar.style.width = progress + '%';
+                percent.innerText = progress + '%';
+            }, 50);
+        };
+
+        // Showing premium notifications
+        function triggerNotification(message) {
+            const toast = document.getElementById('toast-notification');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = message;
+            
+            toast.classList.remove('translate-x-[120%]');
+            toast.classList.add('translate-x-0');
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-x-0');
+                toast.classList.add('translate-x-[120%]');
+            }, 4000);
+        }
+
+        // Add to ecosystem card triggers
+        function addEcosystemItem(name, price) {
+            triggerNotification(`Added ${name} ($${price}.00) to your dynamic package.`);
+        }
+
+        // Updating configuration selection parameters
+        function setConfigOption(category, itemType, price) {
+            configState[category].type = itemType;
+            configState[category].price = price;
+            
+            if (category === 'burger') {
+                configState.burger.name = itemType === 'lite' ? 'McApple Lite' : 'McApple Pro';
+                configState.burger.kcal = itemType === 'lite' ? 610 : 920;
+            } else if (category === 'fries') {
+                configState.fries.name = itemType === 'small' ? 'Fries Lite' : itemType === 'medium' ? 'Fries Air' : 'Fries Pro Max';
+                configState.fries.kcal = itemType === 'small' ? 220 : itemType === 'medium' ? 350 : 510;
+            } else if (category === 'drink') {
+                configState.drink.name = itemType === 'cola' ? 'iSoda Flow' : itemType === 'shake' ? 'iShake Studio' : 'McBrew Ultra';
+                configState.drink.kcal = itemType === 'cola' ? 150 : itemType === 'shake' ? 410 : 10;
+            }
+
+            document.querySelectorAll(`[id^="opt-${category}-"]`).forEach(btn => {
+                btn.classList.remove('border-[#FFC72C]', 'bg-yellow-50/50');
+                btn.classList.add('border-neutral-200');
+            });
+            const activeBtn = document.getElementById(`opt-${category}-${itemType}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('border-neutral-200');
+                activeBtn.classList.add('border-[#FFC72C]', 'bg-yellow-50/50');
+            }
+
+            renderConfigTotals();
+        }
+
+        function selectConfigItem(category, itemType) {
+            let price = itemType === 'lite' ? 799 : itemType === 'standard' ? 899 : itemType === 'pro' ? 999 : 1199;
+            setConfigOption(category, itemType, price);
+        }
+
+        // Processing configuration metrics
+        function renderConfigTotals() {
+            const total = configState.burger.price + configState.fries.price + configState.drink.price;
+            const totalKcal = configState.burger.kcal + configState.fries.kcal + configState.drink.kcal;
+
+            document.getElementById('summary-burger').innerText = configState.burger.name;
+            document.getElementById('summary-fries').innerText = configState.fries.name;
+            document.getElementById('summary-drink').innerText = configState.drink.name;
+
+            document.getElementById('summary-total').innerText = `$${total.toLocaleString()}.00`;
+            document.getElementById('summary-calories').innerText = `${totalKcal.toLocaleString()} kcal`;
+
+            const barPercent = Math.min((totalKcal / 2000) * 100, 100);
+            document.getElementById('calorie-progress').style.width = `${barPercent}%`;
+        }
+
+        function triggerOrderCheckout() {
+            const checkoutBtn = document.querySelector('#order button[onclick="triggerOrderCheckout()"]');
+            checkoutBtn.innerText = "Configuring Laser Grill Coordinates...";
+            checkoutBtn.disabled = true;
+            setTimeout(() => {
+                checkoutBtn.innerText = "Order Sent to Nearby McKitchen!";
+                triggerNotification("Dynamic Order parameters delivered to kitchen core assembly line.");
+                setTimeout(() => {
+                    checkoutBtn.innerText = "Add to Cardboard Bag";
+                    checkoutBtn.disabled = false;
+                }, 3000);
+            }, 1500);
+        }
+
+        function showStoreDetail(hubKey) {
+            const data = storeDirectory[hubKey];
+            document.getElementById('store-name').innerText = data.name;
+            document.getElementById('store-desc').innerText = data.desc;
+            document.getElementById('store-hours').innerText = data.hours;
+            document.getElementById('store-phone').innerText = data.phone;
+            triggerNotification(`Inspecting Flagship Hub: ${data.name}`);
+        }
+
+        function toggleAccordion(id) {
+            const faq = document.getElementById(id);
+            const icon = document.getElementById(`${id}-icon`);
+            if (faq.classList.contains('hidden')) {
+                faq.classList.remove('hidden');
+                icon.innerText = "−";
+            } else {
+                faq.classList.add('hidden');
+                icon.innerText = "+";
+            }
+        }
+
+        // Initializing viewport animations and micro-interactions
+        function initAnimations() {
+            gsap.registerPlugin(ScrollTrigger);
+
+            const burgerStack = document.getElementById('burger-stack');
+            const burgerContainer = document.getElementById('burger-container');
+            const layers = document.querySelectorAll('.burger-layer');
+            const labels = document.querySelectorAll('.layer-label');
+
+            let isHovered = false;
+
+            burgerContainer.addEventListener('mouseenter', () => {
+                isHovered = true;
+                gsap.to(layers[0], { top: "-10px", duration: 0.6, ease: "power2.out" });
+                gsap.to(layers[1], { top: "65px", duration: 0.6, ease: "power2.out" });
+                gsap.to(layers[2], { top: "135px", duration: 0.6, ease: "power2.out" });
+                gsap.to(layers[3], { top: "210px", duration: 0.6, ease: "power2.out" });
+                gsap.to(layers[4], { top: "275px", duration: 0.6, ease: "power2.out" });
+                labels.forEach(lbl => lbl.style.opacity = '1');
+            });
+
+            burgerContainer.addEventListener('mouseleave', () => {
+                isHovered = false;
+                gsap.to(layers[0], { top: "0px", duration: 0.6, ease: "power2.out" });
+                gsap.to(layers[1], { top: "60px", duration: 0.6, ease: "power2.out" });
+                gsap.to(layers[2], { top: "110px", duration: 0.6, ease: "power2.out" });
+                gsap.to(layers[3], { top: "175px", duration: 0.6, ease: "power2.out" });
+                gsap.to(layers[4], { top: "220px", duration: 0.6, ease: "power2.out" });
+                labels.forEach(lbl => lbl.style.opacity = '0');
+                gsap.to(burgerStack, { rotationY: 0, rotationX: 0, duration: 0.8 });
+            });
+
+            burgerContainer.addEventListener('mousemove', (e) => {
+                if (!isHovered) return;
+                const rect = burgerContainer.getBoundingClientRect();
+                const x = e.clientX - rect.left - (rect.width / 2);
+                const y = e.clientY - rect.top - (rect.height / 2);
+                
+                gsap.to(burgerStack, {
+                    rotationY: x * 0.1,
+                    rotationX: -y * 0.1,
+                    duration: 0.5,
+                    ease: "power1.out"
+                });
+            });
+
+            const stats = ['stat-customers', 'stat-orders', 'stat-rating', 'stat-recommend'];
+            stats.forEach(id => {
+                const el = document.getElementById(id);
+                const target = parseFloat(el.getAttribute('data-val'));
+                
+                ScrollTrigger.create({
+                    trigger: el,
+                    start: "top 85%",
+                    onEnter: () => {
+                        let countObj = { val: 0 };
+                        gsap.to(countObj, {
+                            val: target,
+                            duration: 2.5,
+                            ease: "power3.out",
+                            onUpdate: () => {
+                                if (id === 'stat-rating') {
+                                    el.innerText = countObj.val.toFixed(1) + '★';
+                                } else if (id === 'stat-recommend') {
+                                    el.innerText = Math.floor(countObj.val) + '%';
+                                } else {
+                                    el.innerText = Math.floor(countObj.val).toLocaleString() + '+';
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            const particlesBox = document.getElementById('particles');
+            for (let i = 0; i < 40; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'absolute bg-white rounded-full opacity-20';
+                dot.style.width = Math.random() * 3 + 1 + 'px';
+                dot.style.height = dot.style.width;
+                dot.style.left = Math.random() * 100 + '%';
+                dot.style.top = Math.random() * 100 + '%';
+                particlesBox.appendChild(dot);
+                
+                gsap.to(dot, {
+                    y: -100 - Math.random() * 200,
+                    opacity: 0,
+                    duration: 5 + Math.random() * 10,
+                    repeat: -1,
+                    ease: "none"
+                });
+            }
+
+            gsap.from(".scroll-reveal-card", {
+                scrollTrigger: {
+                    trigger: "#reviews",
+                    start: "top 80%",
+                },
+                y: 50,
+                opacity: 0,
+                duration: 0.8,
+                stagger: 0.15,
+                ease: "power2.out"
+            });
+        }
+    </script>
+</body>
+</html>
